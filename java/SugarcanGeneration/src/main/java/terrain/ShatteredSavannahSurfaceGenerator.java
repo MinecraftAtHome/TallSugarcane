@@ -57,6 +57,7 @@ public class ShatteredSavannahSurfaceGenerator extends OverworldTerrainGenerator
     }
 
     public static void main(String[] args) {
+        // using a single floating block for testing
         ShatteredSavannahSurfaceGenerator sgen = new ShatteredSavannahSurfaceGenerator(123L);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {

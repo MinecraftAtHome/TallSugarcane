@@ -13,6 +13,10 @@ public class WaterfallFeature {
     private static final int SALT_WATER = 80_007;
     private static final int SALT_LAVA = 80_008;
 
+    /**
+     * Returns a list of all waterfall source blocks in the provided chunk (chunkX, chunkZ) such that
+     * the generated waterfall can form a column of water at (colX, colZ)
+     */
     public static List<BPos> getAllNearColumn(long structureSeed, int chunkX, int chunkZ, int colX, int colZ, ChunkRand rand) {
         rand.setDecoratorSeed(structureSeed, chunkX << 4, chunkZ << 4, SALT_WATER, MCVersion.v1_16_1);
 
