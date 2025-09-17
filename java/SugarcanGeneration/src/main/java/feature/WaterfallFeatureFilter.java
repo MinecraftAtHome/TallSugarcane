@@ -58,7 +58,8 @@ public class WaterfallFeatureFilter {
         // 5 solid blocks in total around the waterfall
         int solidBlocks = 0;
         for (BlockDirection dir : BlockDirection.values()) {
-            if (sgen.getBlockAt(colX, waterfallPos.getY(), colZ).orElseThrow().getId() == Blocks.STONE.getId()) {
+            BPos pos = new BPos(dir.getVector()).add(new BPos(colX, waterfallPos.getY(), colZ));
+            if (sgen.getBlockAt(pos.getX(), pos.getY(), pos.getZ()).orElseThrow().getId() == Blocks.STONE.getId()) {
                 solidBlocks++;
             }
         }
