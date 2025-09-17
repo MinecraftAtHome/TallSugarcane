@@ -38,12 +38,12 @@ public class WaterfallFeatureFilter {
             if (!waterfallCanGenerate(sgen, waterfallPos, colX, colZ)) {
                 continue;
             }
-            if (hasSuitableTerrain(sgen, waterfallPos, sugarcaneRootPos)) {
+            if (hasSuitableTerrain(sgen, sugarcaneRootPos, colX, colZ)) {
                 maxHeight = Math.max(maxHeight, waterfallPos.getY() - sugarcaneRootPos.getY() + 3);
             }
         }
 
-        return 0;
+        return maxHeight;
     }
 
     /**
