@@ -32,8 +32,6 @@ public class SugarCaneFeature {
             int heightOrigin = Math.max(terrainGen.getHeightOnGround(x, z), 63);
             int y = rand.nextInt(heightOrigin*2);
 
-            System.out.println(x + " " + y + " " + z);
-
             BPos patchOrigin = new BPos(x, y, z);
             for (int j = 0; j < TRIES_PER_PATCH; ++j) {
                 BPos sugarCanePos = patchOrigin.add(rand.nextInt(5) - rand.nextInt(5), rand.nextInt(1) - rand.nextInt(1), rand.nextInt(5) - rand.nextInt(5));
@@ -43,15 +41,24 @@ public class SugarCaneFeature {
 
                 if(height==patchOrigin.getY()) {
 
-                    //code to test, needs other code here for waterfall
+                    //collision check with already placed sugar cane (probably not that needed for waterfall strat)
+                    boolean alreadyHasSugarCane = false;
+                    for (Pair<BPos, Integer> pair : sugarCanePositions) {
+                        if (pair.getFirst().equals(sugarCanePos)) {
+                            alreadyHasSugarCane = true;
+                            break;
+                        }
+                    }
+                    if (alreadyHasSugarCane) {
+                        continue;
+                    }
+
                     if(isAty63AndHasWater(sugarCanePos, terrainGen)) {
                         int length = 2 + rand.nextInt(rand.nextInt(3) + 1);
                         sugarCanePositions.add(new Pair<>(sugarCanePos, length));
                     }
 
-                    //needs collision check with already placed sugar cane?
-
-                    //cant place on stone check?
+                    //cant place on stone check? (lots of stone in shattered savanna but we can just gamble on it being dirt/grass)
 
                 }
 
@@ -83,15 +90,20 @@ public class SugarCaneFeature {
     }
 
     public static void main(String[] args) {
+        //(tested in single biome shattered savanna)
         long seed = 6691L;
-        int chunkX = 18;
-        int chunkZ = 34;
+        //int chunkX = 18;
+        //int chunkZ = 34;
 
         //int chunkX = 21;
         //int chunkZ = 32;
 
-        //int chunkX = -44;
-        //int chunkZ = 21;
+        // grass cancels this??? idk
+        //int chunkX = -107;
+        //int chunkZ = 115;
+
+        int chunkX = -134;
+        int chunkZ = 206;
 
         ChunkRand rand = new ChunkRand();
 
