@@ -28,14 +28,15 @@ public class SugarCaneFeature {
 
         int startRootY = 64; // we assume terrain height is at startRootY-1 and first sugar cane gens at startRootY
 
+        //this method first checks if this chunk has good patches that align
         // patchPosition = (patch index in the chunk, center of its 9x9 area)
         ArrayList<Pair<Integer, BPos>> patchPositions = calculatePotentialSugarCanePacthes(structureSeed, chunkX, chunkZ, startRootY, rand);
         if(patchPositions.isEmpty()) {
             return;
         }
 
-        int maxPatchHeight = patchPositions.get(patchPositions.size()-1).getSecond().getY()+4 - startRootY;
-        if(maxPatchHeight<minHeight) {
+        int maxStackHeight = patchPositions.get(patchPositions.size()-1).getSecond().getY()+4 - startRootY;
+        if(maxStackHeight<minHeight) {
             return;
         }
 
