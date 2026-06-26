@@ -40,6 +40,8 @@ public class TallSugarcaneFinder extends SeedFinder {
         ArrayList<Long> chunk1Seeds = new ArrayList<>();
         ArrayList<Long> chunk2Seeds = new ArrayList<>();
 
+        //System.out.printf("===== Running %d - %d\n", seedMin, seedMax);
+
         new WaterfallChunkFinder(seedMin/10, seedMax/10).run(chunk1Seeds);
         new SugarcaneChunkFinder(seedMin*10, seedMax*10).run(chunk2Seeds);
 
@@ -70,32 +72,38 @@ public class TallSugarcaneFinder extends SeedFinder {
         if (waterfall == null || sugarcane == null) {
             return;
         }
-
-        // terrain at sugarcane x,z has to be exactly y=SUGARCANE_ROOT_Y
+        waterfall = waterfall.add(res.blockX(), 0, res.blockZ());
         ShatteredSavannahSurfaceGenerator sgen = new ShatteredSavannahSurfaceGenerator(res.structureSeed());
-        if (sgen.getHeightOnGround(sugarcane.getX(), sugarcane.getZ()) != SUGARCANE_ROOT_Y) {
-            return;
-        }
-        //System.out.println("-- sugarcane terrain height good " + res);
 
         // waterfall conditions
-        BPos opening = waterfall.add(0, 0, 1);
-        BPos[] solidBlocks = new BPos[] {
-            waterfall.add(0, 0, -1),
-            waterfall.add(0, 1, 0),
-            waterfall.add(0, -1, 0),
-            waterfall.add(1, 0, 0),
-            waterfall.add(-1, 0, 0),
+        BPos opening = waterfall.add(WATERFALL_OPENING_DX, 0, WATERFALL_OPENING_DZ);
+        BPos[] surroundingBlocks = new BPos[] {
+                waterfall.add(0, 0, 1),
+                waterfall.add(0, 0, -1),
+                waterfall.add(0, 1, 0),
+                waterfall.add(0, -1, 0),
+                waterfall.add(1, 0, 0),
+                waterfall.add(-1, 0, 0),
         };
         if (sgen.getBlockAt(opening).get().getId() != Blocks.AIR.getId()) {
             return;
         }
-        for (var pos : solidBlocks) {
-            if (sgen.getBlockAt(pos).get().getId() == Blocks.AIR.getId()) {
-                return;
+        int solidCount = 0;
+        for (var pos : surroundingBlocks) {
+            if (sgen.getBlockAt(pos).get().getId() != Blocks.AIR.getId()) {
+                solidCount++;
             }
         }
+        if (solidCount != 5) {
+            return;
+        }
         System.out.println("-- waterfall good " + res);
+
+        // terrain at sugarcane x,z has to be exactly y=SUGARCANE_ROOT_Y
+        if (sgen.getHeightOnGround(sugarcane.getX(), sugarcane.getZ()) != SUGARCANE_ROOT_Y) {
+            return;
+        }
+        System.out.println("-- sugarcane terrain height good " + res);
 
         // waterfall reaches all the way down to 1 block below minRootY
         if (sgen.getHeightOnGround(opening.getX(), opening.getZ()) >= SUGARCANE_ROOT_Y) {

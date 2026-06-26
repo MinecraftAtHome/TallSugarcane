@@ -54,8 +54,8 @@ public abstract class SeedFinder {
             for (int tid = 0; tid < numThreads; tid++) {
                 resultLists.add(new ArrayList<>());
                 final ArrayList<Long> finderOut = resultLists.get(tid);
-                final long seedMinLocal = tid * seedsPerThread;
-                final long seedMaxLocal = (tid + 1) * seedsPerThread;
+                final long seedMinLocal = this.seedMin + tid * seedsPerThread;
+                final long seedMaxLocal = this.seedMin + (tid + 1) * seedsPerThread;
 
                 threads[tid] = new Thread(
                         () -> {
