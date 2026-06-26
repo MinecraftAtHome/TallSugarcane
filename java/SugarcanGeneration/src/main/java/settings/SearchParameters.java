@@ -2,7 +2,7 @@ package settings;
 
 public class SearchParameters {
     public static int SUGARCANE_MIN_HEIGHT = 8;
-    public static int SUGARCANE_ROOT_Y = 70;
+    public static int SUGARCANE_ROOT_Y = 66;
     public static int SUGARCANE_RELATIVE_X = 8;
     public static int SUGARCANE_RELATIVE_Z = 0;
 

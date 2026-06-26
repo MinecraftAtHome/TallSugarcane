@@ -42,10 +42,10 @@ public class TallSugarcaneFinder extends SeedFinder {
 
         //System.out.printf("===== Running %d - %d\n", seedMin, seedMax);
 
-        new WaterfallChunkFinder(seedMin/10, seedMax/10).run(chunk1Seeds);
-        new SugarcaneChunkFinder(seedMin*10, seedMax*10).run(chunk2Seeds);
+        new WaterfallChunkFinder(seedMin, seedMax).run(chunk1Seeds);
+        new SugarcaneChunkFinder(seedMin, seedMax).run(chunk2Seeds);
 
-        //long s1 = chunk1Seeds.size(), s2 = chunk2Seeds.size();
+        long s1 = chunk1Seeds.size(), s2 = chunk2Seeds.size();
         //System.out.printf("-- candidates: %d x %d = %d\n", s1, s2, s1 * s2);
 
         // Double pop seed reversal
@@ -97,10 +97,12 @@ public class TallSugarcaneFinder extends SeedFinder {
         if (solidCount != 5) {
             return;
         }
-        System.out.println("-- waterfall good " + res);
+
+        int hy = sgen.getHeightOnGround(sugarcane.getX(), sugarcane.getZ());
+        System.out.println("-- waterfall good " + res + "  y val = " + hy);
 
         // terrain at sugarcane x,z has to be exactly y=SUGARCANE_ROOT_Y
-        if (sgen.getHeightOnGround(sugarcane.getX(), sugarcane.getZ()) != SUGARCANE_ROOT_Y) {
+        if (hy != SUGARCANE_ROOT_Y) {
             return;
         }
         System.out.println("-- sugarcane terrain height good " + res);
@@ -135,8 +137,8 @@ public class TallSugarcaneFinder extends SeedFinder {
 
 
     public static void main(String[] args) {
-        long offset = 100_000_000L * 100;
-        long batchSize = 100_000_000L;
+        long offset = 100_000_000L * 200;
+        long batchSize = 500_000_000L;
         int numBatches = 100;
 
         for (int b = 0; b < numBatches; b++) {
