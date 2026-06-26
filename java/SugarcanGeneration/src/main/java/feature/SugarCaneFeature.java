@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.LongStream;
 
+import static settings.SearchParameters.*;
+
 public class SugarCaneFeature {
     // salt is for the shattered savannah biome
     private static final int SUGAR_CANE = 80_005;
@@ -24,33 +26,42 @@ public class SugarCaneFeature {
     private static final int TRIES_PER_PATCH = 20;
     private static final int PATCH_SPREAD = 4;
 
-    public static void findSugarCaneStack(long structureSeed, int chunkX, int chunkZ, int minHeight, ChunkRand rand) {
-
-        int startRootY = 64; // we assume terrain height is at startRootY-1 and first sugar cane gens at startRootY
+    public static BPos findSugarCaneStack(long populationSeed, int chunkX, int chunkZ, int minHeight, int startRootY, ChunkRand rand) {
+        //int startRootY = 64;
+        // we assume terrain height is at startRootY-1 and first sugar cane gens at startRootY
 
         //this method first checks if this chunk has good patches that align
         // patchPosition = (patch index in the chunk, center of its 9x9 area)
-        ArrayList<Pair<Integer, BPos>> patchPositions = calculatePotentialSugarCanePacthes(structureSeed, chunkX, chunkZ, startRootY, rand);
+        ArrayList<Pair<Integer, BPos>> patchPositions = calculatePotentialSugarCanePacthes(populationSeed, chunkX, chunkZ, startRootY, rand);
         if(patchPositions.isEmpty()) {
-            return;
+            return null;
         }
 
         int maxStackHeight = patchPositions.get(patchPositions.size()-1).getSecond().getY()+4 - startRootY;
         if(maxStackHeight<minHeight) {
-            return;
+            return null;
         }
 
         BlockBox overlapBox = findOverlapBox(patchPositions);
         ArrayList<BPos> sugarCaneStacks = new ArrayList<>();
-        for (int x = overlapBox.minX; x <= overlapBox.maxX; x++) {
-            for (int z = overlapBox.minZ; z <= overlapBox.maxZ; z++) {
-                if((x==0 || z==0 || x==15 || z==15) && x>=0 && z>=0 && x<=15 && z<=15) {
-                    sugarCaneStacks.add(new BPos(x, startRootY, z));
-                }
+        if (overlapBox.minX <= SUGARCANE_RELATIVE_X + chunkX*16 && SUGARCANE_RELATIVE_X + chunkX*16 <= overlapBox.maxX) {
+            if (overlapBox.minZ <= SUGARCANE_RELATIVE_Z + chunkZ*16 && SUGARCANE_RELATIVE_Z + chunkZ*16 <= overlapBox.maxZ) {
+                sugarCaneStacks.add(new BPos(chunkX*16 + SUGARCANE_RELATIVE_X, startRootY, chunkZ*16 + SUGARCANE_RELATIVE_Z));
             }
         }
+        if (sugarCaneStacks.isEmpty()) {
+            return null;
+        }
 
-        rand.setDecoratorSeed(structureSeed, chunkX << 4, chunkZ << 4, SUGAR_CANE, MCVersion.v1_16_1);
+//        for (int x = overlapBox.minX; x <= overlapBox.maxX; x++) {
+//            for (int z = overlapBox.minZ; z <= overlapBox.maxZ; z++) {
+//                if((x==0 || z==0 || x==15 || z==15) && x>=0 && z>=0 && x<=15 && z<=15) {
+//                    sugarCaneStacks.add(new BPos(x, startRootY, z));
+//                }
+//            }
+//        }
+
+        rand.setDecoratorSeed(populationSeed, SUGAR_CANE, MCVersion.v1_16_1);
 
         int patchesProcessed = 0;
         for (Pair<Integer, BPos> patchPosition : patchPositions) {
@@ -84,15 +95,17 @@ public class SugarCaneFeature {
 
         for (BPos sugarCaneStack : sugarCaneStacks) {
             if(sugarCaneStack.getY()-startRootY >= minHeight) {
-                SurfaceGenerator sgen = new ShatteredSavannahSurfaceGenerator(structureSeed);
-                if(checkTerrainForSugarCaneStack(sugarCaneStack, patchPositions, startRootY, sgen)) {
-                    System.out.println(structureSeed);
-                    System.out.println(sugarCaneStack);
-                    System.out.println(patchPositions);
-                    System.out.println();
-                }
+                return sugarCaneStack;
+//                SurfaceGenerator sgen = new ShatteredSavannahSurfaceGenerator(structureSeed);
+//                if(checkTerrainForSugarCaneStack(sugarCaneStack, patchPositions, startRootY, sgen)) {
+//                    System.out.println(structureSeed);
+//                    System.out.println(sugarCaneStack);
+//                    System.out.println(patchPositions);
+//                    System.out.println();
+//                }
             }
         }
+        return null;
     }
 
     private static boolean checkTerrainForSugarCaneStack(BPos sugarCaneStack, ArrayList<Pair<Integer, BPos>> patchPositions, int startRootY, SurfaceGenerator sgen) {
@@ -123,11 +136,11 @@ public class SugarCaneFeature {
     }
 
     //checks sugar cane patches of a chunk checking for good x,z overlap and y heights
-    public static ArrayList<Pair<Integer, BPos>> calculatePotentialSugarCanePacthes(long structureSeed, int chunkX, int chunkZ, int startRootY, ChunkRand rand) {
+    public static ArrayList<Pair<Integer, BPos>> calculatePotentialSugarCanePacthes(long populationSeed, int chunkX, int chunkZ, int startRootY, ChunkRand rand) {
 
         ArrayList<Pair<Integer, BPos>> patchPositions = new ArrayList<>();
 
-        rand.setDecoratorSeed(structureSeed, chunkX << 4, chunkZ << 4, SUGAR_CANE, MCVersion.v1_16_1);
+        rand.setDecoratorSeed(populationSeed, SUGAR_CANE, MCVersion.v1_16_1);
 
         //if there's first a y63 then a y66 but then a y65 that y65 will not be kept track of currently (can be added later)
         //todo ^^
@@ -140,10 +153,15 @@ public class SugarCaneFeature {
 
             rand.advance(TRIES_PER_PATCH*6);  //advance 6 calls for each sugar cane it tries to gen
 
+            int minXInChunk = chunkX * 16;
+            int minZInChunk = chunkZ * 16;
+            int maxXInChunk = chunkX * 16 + 15;
+            int maxZInChunk = chunkZ * 16 + 15;
+
             //if((first sugar && is height we predicted) or (not first sugar && is 1 to 4 higher than previous y)) (xd)
             if((patchPositions.isEmpty() && y == startRootY) || (!patchPositions.isEmpty() && y - patchPositions.get(patchPositions.size() - 1).getSecond().getY() >= 1 && y - patchPositions.get(patchPositions.size() - 1).getSecond().getY() <= 4)) {
                 //check if patch touches chunkborder
-                if(x-PATCH_SPREAD <= 0 || x+PATCH_SPREAD >= 15 || z-PATCH_SPREAD <= 0 || z+PATCH_SPREAD >= 15) {
+                if(x-PATCH_SPREAD <= minXInChunk || x+PATCH_SPREAD >= maxXInChunk || z-PATCH_SPREAD <= minZInChunk || z+PATCH_SPREAD >= maxZInChunk) {
 
                     BPos newPos = new BPos(x, y, z);
                     if (patchPositions.isEmpty() || checkPositionsOverlapAtChunkBorder(newPos, patchPositions)) {
@@ -261,7 +279,13 @@ public class SugarCaneFeature {
         LongStream.range(0L, (long) Math.pow(2, 16)).parallel().forEach(i -> {
             ChunkRand rand = new ChunkRand();
             for (long seed = i*BLOCK; seed < (i+1)*BLOCK; seed++) {
-                findSugarCaneStack(seed, 0, 0, 8, rand);
+                BPos sugarCaneStack = findSugarCaneStack(seed, 0, 0, 8, 64, rand);
+                if (sugarCaneStack == null) {
+                    continue;
+                }
+
+                System.out.println(sugarCaneStack);
+                System.out.println(seed);
             }
         });
         //findSugarCaneStack(3147251894L, 0, 0, 8, new ChunkRand());
