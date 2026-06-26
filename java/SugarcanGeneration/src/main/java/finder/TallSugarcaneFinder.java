@@ -46,16 +46,23 @@ public class TallSugarcaneFinder extends SeedFinder {
         new SugarcaneChunkFinder(seedMin, seedMax).run(chunk2Seeds);
 
         long s1 = chunk1Seeds.size(), s2 = chunk2Seeds.size();
-        //System.out.printf("-- candidates: %d x %d = %d\n", s1, s2, s1 * s2);
+        System.out.printf("-- candidates: %d x %d = %d\n", s1, s2, s1 * s2);
 
         // Double pop seed reversal
 
+        int maxCount = 1_000, count = 0;
         for (long c1 : chunk1Seeds) {
             for (long c2 : chunk2Seeds) {
                 if ((c1 & 15) != (c2 & 15)) {
                     continue;
                 }
+                if (count++ > maxCount) {
+                    break;
+                }
                 tccrr.getWorldseedFromTwoChunkseeds(c1, c2, 0, 16, MCVersion.v1_16_1).forEach(this::postFilter);
+            }
+            if (count > maxCount) {
+                break;
             }
         }
     }
@@ -107,10 +114,10 @@ public class TallSugarcaneFinder extends SeedFinder {
         }
         System.out.println("-- sugarcane terrain height good " + res);
 
-        // waterfall reaches all the way down to 1 block below minRootY
-        if (sgen.getHeightOnGround(opening.getX(), opening.getZ()) >= SUGARCANE_ROOT_Y) {
-            return;
-        }
+        //waterfall reaches all the way down to minRootY to avoid flooding
+        //if (sgen.getHeightOnGround(opening.getX(), opening.getZ()) > SUGARCANE_ROOT_Y) {
+        //    return;
+        //}
 
         System.out.println("-- reached world seed check for candidate " + res);
         WorldSeed.getSisterSeeds(res.structureSeed()).asStream().boxed()
@@ -137,7 +144,15 @@ public class TallSugarcaneFinder extends SeedFinder {
 
 
     public static void main(String[] args) {
-        long offset = 100_000_000L * 200;
+
+        // sugarcane terrain height good Result[structureSeed=226376607997515, blockX=19593600, blockZ=9832256]
+        // Result[structureSeed=153744200864954, blockX=26863392, blockZ=-19060736]
+
+        TwoChunkCRR.Result res = new TwoChunkCRR.Result(153744200864954L, 26863392, -19060736);
+        new TallSugarcaneFinder(0, 0).postFilter(res);
+        if (true) return;
+
+        long offset = 100_000_000L * 6900;
         long batchSize = 500_000_000L;
         int numBatches = 100;
 
