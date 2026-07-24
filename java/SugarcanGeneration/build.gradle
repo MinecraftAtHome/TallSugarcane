@@ -4,6 +4,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven { url "https://maven.xpple.dev/maven2" }
     maven { url "https://maven.seedfinding.com" }
     maven { url "https://maven.latticg.com/" }
     maven { url "https://repo.jellejurre.dev" }
@@ -25,6 +26,8 @@ dependencies {
     implementation('com.seedfinding:mc_feature:1.171.9') { transitive = false }
 
     implementation('com.github.jellejurre:seed-checker:1.2.0-1.16.1') { transitive = false }
+
+    implementation("dev.xpple:cubiomes:0.0.0-2026.5.18.1779128583+1a0c27a6b80f6bebbfe18b806af70fe18f33d0c4")
 }
 
 test {
