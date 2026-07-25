@@ -8,6 +8,8 @@ import com.seedfinding.mcmath.util.Mth;
 import java.util.ArrayList;
 import java.util.List;
 
+import static settings.SearchParameters.*;
+
 public class WaterfallFeature {
     // salts are for the shattered savannah biome
     private static final int SALT_WATER = 80_007;
@@ -32,22 +34,24 @@ public class WaterfallFeature {
         return results;
     }
 
-    /*
-   public class HeightBiasedRange extends SimplePlacement<CountRangeConfig> {
-   public HeightBiasedRange(Codec<CountRangeConfig> p_i232071_1_) {
-      super(p_i232071_1_);
-   }
+    public static BPos goodWaterfallInChunk(long populationSeed, ChunkRand rand) {
+        rand.setDecoratorSeed(populationSeed, SALT_WATER, MCVersion.v1_16_1);
 
-   public Stream<BlockPos> getPositions(Random random, CountRangeConfig p_212852_2_, BlockPos pos) {
-      return IntStream.range(0, p_212852_2_.count).mapToObj((p_227436_3_) -> {
-         int i = random.nextInt(16) + pos.getX();
-         int j = random.nextInt(16) + pos.getZ();
-         int k = random.nextInt(random.nextInt(p_212852_2_.maximum - p_212852_2_.topOffset) + p_212852_2_.bottomOffset);
-         return new BlockPos(i, k, j);
-      });
-   }
-}
-     */
+        int x = rand.nextInt(16);
+        if (x != WATERFALL_RELATIVE_X) {
+            return null;
+        }
+        int z = rand.nextInt(16);
+        if (z != WATERFALL_RELATIVE_Z) {
+            return null;
+        }
+        int y = rand.nextInt(rand.nextInt(256 - 8) + 8);
+        if (y < WATERFALL_MIN_Y || y > WATERFALL_MAX_Y) {
+            return null;
+        }
+
+        return new BPos(x, y, z);
+    }
 
     public static void main(String[] args) {
         long seed = -8981924485009184440L;
