@@ -14,7 +14,7 @@ import java.util.List;
 public class CubiomesCanyonGenerator {
     private static ChunkRand rand = new ChunkRand();
 
-    public static List<BPos> getCanyonCarvedAir(long carverSeed, int chunkX, int chunkZ) {
+    public static List<BPos> getCanyonCarvedAir(long structureSeed, int chunkX, int chunkZ) {
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment pos3ListPointer = arena.allocate(Pos3List.layout().byteSize()).reinterpret(Pos3List.layout().byteSize());
             MemorySegment cccPointer = arena.allocate(CanyonCarverConfig.layout().byteSize());
@@ -24,7 +24,7 @@ public class CubiomesCanyonGenerator {
             Cubiomes.getCanyonCarverConfig(Cubiomes.CANYON_CARVER(), Cubiomes.MC_1_16_1(), cccPointer);
 
             Cubiomes.carveCanyon(
-                    carverSeed,
+                    structureSeed,
                     Cubiomes.MC_1_16_1(),
                     chunkX, chunkZ,
                     cccPointer,

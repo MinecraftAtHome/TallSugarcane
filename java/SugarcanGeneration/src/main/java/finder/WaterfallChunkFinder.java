@@ -1,5 +1,6 @@
 package finder;
 
+import com.seedfinding.mcmath.util.Mth;
 import feature.WaterfallFeature;
 
 import java.util.List;
@@ -28,6 +29,8 @@ class WaterfallChunkFinder extends SeedFinder {
     public void run(List<Long> resultsOut) {
         for (long seed = this.seedMin; seed < this.seedMax; seed++) {
             long realSeed = (seed << 4) | low4;
+            realSeed += 0xAAAA_AAAA_AAA0L;
+            realSeed &= Mth.MASK_48;
             if (checkSeed(realSeed)) {
                 resultsOut.add(realSeed);
             }

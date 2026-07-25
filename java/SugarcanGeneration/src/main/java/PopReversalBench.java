@@ -1,6 +1,6 @@
 import com.seedfinding.mccore.version.MCVersion;
 import com.seedfinding.mcreversal.ChunkRandomReverser;
-import com.seedfinding.mcreversal.TwoChunkCRR;
+import com.seedfinding.mcreversal.MultiChunkHelper;
 
 import java.util.Random;
 import java.util.function.Supplier;
@@ -36,10 +36,10 @@ public class PopReversalBench {
         int results = 0;
         long popseedA = new Random().nextLong();
         long popseedB = ((new Random().nextLong() >> 4) << 4) | (popseedA & 15);
-        TwoChunkCRR crr = new TwoChunkCRR();
+        MultiChunkHelper crr = new MultiChunkHelper();
 
         for (int i = 0; i < 100; i++) {
-            results += crr.getWorldseedFromTwoChunkseeds(popseedA, popseedB + 16 * i, 0, 16, MCVersion.v1_16_1).size();
+            results += ChunkRandomReverser.getWorldseedFromTwoChunkseeds(popseedA, popseedB + 16 * i, 0, 16, MCVersion.v1_16_1).size();
         }
         return results;
     }

@@ -15,8 +15,8 @@ import java.util.List;
 
 
 public class SugarCaneFeature {
-    // salt is for the shattered savannah biome
-    private static final int SUGAR_CANE = 80_005;
+    // salt is for the shattered savannah biome (seems like desert biome uses the same salt)
+    public static final int SALT = 80_005;
 
     //patches per chunk is higher for some biomes (edit: using desert biome, 60 patches here)
     private static final int PATCHES_PER_CHUNK = 60;
@@ -58,7 +58,7 @@ public class SugarCaneFeature {
 //            }
 //        }
 
-        rand.setDecoratorSeed(populationSeed, SUGAR_CANE, MCVersion.v1_16_1);
+        rand.setDecoratorSeed(populationSeed, SALT, MCVersion.v1_16_1);
 
         int patchesProcessed = 0;
         for (Pair<Integer, BPos> patchPosition : patchPositions) {
@@ -137,7 +137,7 @@ public class SugarCaneFeature {
 
         ArrayList<Pair<Integer, BPos>> patchPositions = new ArrayList<>();
 
-        rand.setDecoratorSeed(populationSeed, SUGAR_CANE, MCVersion.v1_16_1);
+        rand.setDecoratorSeed(populationSeed, SALT, MCVersion.v1_16_1);
 
         //if there's first a y63 then a y66 but then a y65 that y65 will not be kept track of currently (can be added later)
         //todo ^^
@@ -203,7 +203,7 @@ public class SugarCaneFeature {
     public static List<Pair<BPos, Integer>> getAllSugarCanePositionsAndLength(long structureSeed, int chunkX, int chunkZ, ChunkRand rand, OverworldTerrainGenerator terrainGen) {
         ArrayList<Pair<BPos, Integer>> sugarCanePositions = new ArrayList<>();
 
-        rand.setDecoratorSeed(structureSeed, chunkX << 4, chunkZ << 4, SUGAR_CANE, MCVersion.v1_16_1);
+        rand.setDecoratorSeed(structureSeed, chunkX << 4, chunkZ << 4, SALT, MCVersion.v1_16_1);
 
         for (int patch = 0; patch < PATCHES_PER_CHUNK; ++patch) {
             int x = chunkX * 16 + rand.nextInt(16);
