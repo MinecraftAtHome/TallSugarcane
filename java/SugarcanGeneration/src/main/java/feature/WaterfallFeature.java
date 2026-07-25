@@ -8,12 +8,9 @@ import com.seedfinding.mcmath.util.Mth;
 import java.util.ArrayList;
 import java.util.List;
 
-import static settings.SearchParameters.*;
-
 public class WaterfallFeature {
-    // salts are for the shattered savannah biome
-    private static final int SALT_WATER = 80_007;
-    private static final int SALT_LAVA = 80_008;
+    // salts are for the desert biome
+    private static final int SALT_WATER = 80_008;
 
     /**
      * Returns a list of all waterfall source blocks in the provided chunk (chunkX, chunkZ) such that
@@ -28,29 +25,13 @@ public class WaterfallFeature {
             int x = rand.nextInt(16) + (chunkX << 4);
             int z = rand.nextInt(16) + (chunkZ << 4);
             int y = rand.nextInt(rand.nextInt(256 - 8) + 8);
-            if (Math.abs(x - colX) + Math.abs(z - colZ) == 1)
+
+            int dx = Math.abs(x - colX);
+            int dz = Math.abs(z - colZ);
+            if (dx + dz <= 2 && dx != dz)
                 results.add(new BPos(x, y, z));
         }
         return results;
-    }
-
-    public static BPos goodWaterfallInChunk(long populationSeed, ChunkRand rand) {
-        rand.setDecoratorSeed(populationSeed, SALT_WATER, MCVersion.v1_16_1);
-
-        int x = rand.nextInt(16);
-        if (x != WATERFALL_RELATIVE_X) {
-            return null;
-        }
-        int z = rand.nextInt(16);
-        if (z != WATERFALL_RELATIVE_Z) {
-            return null;
-        }
-        int y = rand.nextInt(rand.nextInt(256 - 8) + 8);
-        if (y < WATERFALL_MIN_Y || y > WATERFALL_MAX_Y) {
-            return null;
-        }
-
-        return new BPos(x, y, z);
     }
 
     public static void main(String[] args) {
