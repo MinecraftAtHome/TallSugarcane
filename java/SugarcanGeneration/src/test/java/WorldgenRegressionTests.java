@@ -2,6 +2,7 @@ import com.seedfinding.mccore.rand.ChunkRand;
 import com.seedfinding.mccore.util.pos.BPos;
 import com.seedfinding.mccore.util.pos.CPos;
 import com.seedfinding.mccore.version.MCVersion;
+import com.seedfinding.mcseed.lcg.LCG;
 import feature.DirtPatchFeature;
 import feature.SugarCaneFeature;
 import org.junit.jupiter.api.Test;
@@ -40,23 +41,18 @@ public class WorldgenRegressionTests {
 
     @Test
     public void testDirtPatchCorrectness() {
-        // /setblock -29181088 42 25654397 minecraft:stone
-        // 36859848319014247  /tp -2736560 43 -9301507
+        // 204913391727623 /tp -29999872 43 -28579971
 
-        BPos expectedPos = new BPos(-2736560, 43, -9301507);
+        long seed = 204913391727623L;
+        BPos expectedPos = new BPos(-29999872, 43, -28579971);
         CPos chunk = expectedPos.toChunkPos();
         DirtPatchFeature dirt = new DirtPatchFeature();
-        System.out.println(dirt.getFirstPos(36859848319014247L, chunk.getX(), chunk.getZ()));
+        System.out.println(dirt.getFirstPos(seed, chunk.getX(), chunk.getZ()));
         System.out.println(dirt.getFirstPosFromPopulationSeed(SUGARCANE_POPSEED, chunk.getX(), chunk.getZ()));
-
-        // what the fuck ???????
-        // 298465396 30503
-        // 298465396 32599
-        // 298465396 82759
 
         for (int dcx = -2; dcx <= 2; dcx++) for (int dcz = -2; dcz <= 2; dcz++) {
             System.out.println(new ChunkRand().setPopulationSeed(
-                    36859848319014247L,
+                    seed,
                     (chunk.getX() + dcx) << 4,
                     (chunk.getZ() + dcz) << 4,
                     MCVersion.v1_16_1
@@ -114,5 +110,13 @@ public class WorldgenRegressionTests {
             assertEquals(x, firstPlacementPos.getX());
             assertEquals(z, firstPlacementPos.getZ());
         }
+    }
+
+    @Test
+    public void popseedcheck() {
+        BPos pos = new BPos(-29999968, 44, 15287991);
+        CPos cpos = pos.toChunkPos();
+        long seed = 3344966128489737L;
+        System.out.println(new ChunkRand().setPopulationSeed(seed, cpos.getX()<<4, cpos.getZ()<<4, MCVersion.v1_16_1));
     }
 }

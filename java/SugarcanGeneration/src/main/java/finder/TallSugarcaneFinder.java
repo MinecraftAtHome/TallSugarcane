@@ -43,14 +43,14 @@ public class TallSugarcaneFinder extends SeedFinder {
         for (long seed = seedMin; seed < seedMax; seed++) {
             int chunkX = (int) (seed / CHUNKS_ON_AXIS) - CHUNKS_ON_AXIS / 2;
             int chunkZ = (int) (seed % CHUNKS_ON_AXIS) - CHUNKS_ON_AXIS / 2;
-            ChunkRandomReverser.reversePopulationSeed(seed, chunkX * 16, chunkZ * 16, MCVersion.v1_16_1)
+            ChunkRandomReverser.reversePopulationSeed(SUGARCANE_POPSEED, chunkX * 16, chunkZ * 16, MCVersion.v1_16_1)
                     .forEach(structureSeed -> postFilter(structureSeed, chunkX*16, chunkZ*16));
         }
     }
 
     private void postFilter(long structureSeed, int blockX, int blockZ) {
-        CPos waterfallChunk = new CPos(blockX >> 4, blockZ >> 4);
-        CPos sugarcaneChunk = new CPos((blockX + BLOCK_DX) >> 4, (blockZ + BLOCK_DZ) >> 4);
+        CPos waterfallChunk = new CPos((blockX - BLOCK_DX) >> 4, (blockZ - BLOCK_DZ) >> 4);
+        CPos sugarcaneChunk = new CPos(blockX >> 4, blockZ >> 4);
         BPos sugarcaneRoot = sugarcaneChunk.toBlockPos(SUGARCANE_ROOT_Y)
                 .add(SUGARCANE_RELATIVE_X, 0, SUGARCANE_RELATIVE_Z);
 
@@ -161,7 +161,7 @@ public class TallSugarcaneFinder extends SeedFinder {
     }
 
     public static void main(String[] args) {
-        long offset = 100_000L * 300;
+        long offset = 100_000L * 3100;
         long batchSize = 100_000L;
         int numBatches = 100;
 

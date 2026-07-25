@@ -78,7 +78,7 @@ public class DirtPlusSugarcanePopseed {
 //            );
 
             int height = sugarcane.getStackHeightAt(popseed, dirtPos.add(0, -DIRT_INDENT, 0));
-            if (height < 14) {
+            if (height < 8) {
                 continue;
             }
 
