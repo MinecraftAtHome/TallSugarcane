@@ -10,10 +10,6 @@ import com.seedfinding.mccore.util.pos.CPos;
 import com.seedfinding.mccore.version.MCVersion;
 import com.seedfinding.mcmath.util.Mth;
 import com.seedfinding.mcreversal.ChunkRandomReverser;
-import com.seedfinding.mcreversal.MultiChunkHelper;
-import feature.DirtPatchFeature;
-import feature.SugarCaneFeature;
-import feature.WaterfallFeature;
 import org.apache.commons.lang3.NotImplementedException;
 import terrain.CubiomesCanyonGenerator;
 
@@ -26,7 +22,7 @@ import static settings.SearchParameters.*;
 import static util.TpCommand.tpCommand;
 
 public class TallSugarcaneFinder extends SeedFinder {
-    private final MultiChunkHelper tccrr = new MultiChunkHelper();
+    private static final int CHUNKS_ON_AXIS = 60_000_000 / 16;
 
     protected TallSugarcaneFinder(long seedMin, long seedMax) {
         super(seedMin, seedMax);
@@ -44,37 +40,17 @@ public class TallSugarcaneFinder extends SeedFinder {
 
     @Override
     public void run(List<Long> resultsOut) {
-        ArrayList<Long> chunk1Seeds = new ArrayList<>();
-        new WaterfallChunkFinder(seedMin, seedMax).withLowerBits(SUGARCANE_POPSEED).run(chunk1Seeds);
-        System.out.printf("-- candidates: %d \n", chunk1Seeds.size());
-
-        // Double pop seed reversal
-
-        int maxCount = 1_000, count = 0;
-        for (long c1 : chunk1Seeds) {
-            if (count++ > maxCount) {
-                break;
-            }
-            for (var res : tccrr.getWorldseedFromTwoChunkseeds(c1, SUGARCANE_POPSEED, BLOCK_DX, BLOCK_DZ, MCVersion.v1_16_1)) {
-                System.out.println("input: " + c1 + " & " + SUGARCANE_POPSEED);
-                postFilter(res);
-            }
+        for (long seed = seedMin; seed < seedMax; seed++) {
+            int chunkX = (int) (seed / CHUNKS_ON_AXIS) - CHUNKS_ON_AXIS / 2;
+            int chunkZ = (int) (seed % CHUNKS_ON_AXIS) - CHUNKS_ON_AXIS / 2;
+            ChunkRandomReverser.reversePopulationSeed(seed, chunkX * 16, chunkZ * 16, MCVersion.v1_16_1)
+                    .forEach(structureSeed -> postFilter(structureSeed, chunkX*16, chunkZ*16));
         }
     }
 
-    private void postFilter(MultiChunkHelper.Result res) {
-        System.out.println(res.getX() + " " + res.getZ());
-
-        long realPopseed = rand.setPopulationSeed(res.getBitsOfSeed(),
-                res.getX() + BLOCK_DX, res.getZ() + BLOCK_DZ, MCVersion.v1_16_1);
-
-        long realC1 = rand.setPopulationSeed(res.getBitsOfSeed(),
-                res.getX(), res.getZ(), MCVersion.v1_16_1);
-
-        System.out.println("got: " + realC1 + " & " + realPopseed);
-
-        CPos waterfallChunk = new CPos(res.getX() >> 4, res.getZ() >> 4);
-        CPos sugarcaneChunk = new CPos((res.getX() + BLOCK_DX) >> 4, (res.getZ() + BLOCK_DZ) >> 4);
+    private void postFilter(long structureSeed, int blockX, int blockZ) {
+        CPos waterfallChunk = new CPos(blockX >> 4, blockZ >> 4);
+        CPos sugarcaneChunk = new CPos((blockX + BLOCK_DX) >> 4, (blockZ + BLOCK_DZ) >> 4);
         BPos sugarcaneRoot = sugarcaneChunk.toBlockPos(SUGARCANE_ROOT_Y)
                 .add(SUGARCANE_RELATIVE_X, 0, SUGARCANE_RELATIVE_Z);
 
@@ -99,7 +75,7 @@ public class TallSugarcaneFinder extends SeedFinder {
         // ravine pre-filter
         int ravines = 0;
         for (int dcx = -2; dcx <= 2; dcx++) for (int dcz = -2; dcz <= 2; dcz++) {
-            if (CubiomesCanyonGenerator.startsAt(res.getBitsOfSeed(), sugarcaneChunk.getX() + dcx, sugarcaneChunk.getZ() + dcz)) {
+            if (CubiomesCanyonGenerator.startsAt(structureSeed, sugarcaneChunk.getX() + dcx, sugarcaneChunk.getZ() + dcz)) {
                 ravines++;
             }
         }
@@ -113,7 +89,7 @@ public class TallSugarcaneFinder extends SeedFinder {
         // - air column at the water column position, reaching down to 1 block beneath sugarcaneRoot
         // - one of the waterfalls generates thanks to ravine
 
-        var airPosSet = CubiomesCanyonGenerator.getCanyonCarvedAir(res.getBitsOfSeed(), sugarcaneChunk.getX(), sugarcaneChunk.getZ())
+        var airPosSet = CubiomesCanyonGenerator.getCanyonCarvedAir(structureSeed, sugarcaneChunk.getX(), sugarcaneChunk.getZ())
                 .stream().collect(Collectors.toUnmodifiableSet());
         if (airPosSet.size() < 200) {
             return;
@@ -123,29 +99,29 @@ public class TallSugarcaneFinder extends SeedFinder {
         if (!airColumnAt(airPosSet, sugarcaneRoot, 64) || airPosSet.contains(sugarcaneRoot.add(0, -1, 0))) {
             return;
         }
-        System.out.println("---- air col 1 good for candidate " + res);
+        System.out.println("---- air col 1 good for candidate " + structureSeed + " " + tpCommand(sugarcaneRoot));
         System.out.println(tpCommand(sugarcaneRoot));
 
-        var airPosSet2 = CubiomesCanyonGenerator.getCanyonCarvedAir(res.getBitsOfSeed(), waterfallChunk.getX(), waterfallChunk.getZ())
+        var airPosSet2 = CubiomesCanyonGenerator.getCanyonCarvedAir(structureSeed, waterfallChunk.getX(), waterfallChunk.getZ())
                 .stream().collect(Collectors.toUnmodifiableSet());
         if (!airColumnAt(airPosSet2, sugarcaneRoot.subtract(CHUNK_DX, 1, CHUNK_DZ), WATERFALL_MIN_Y)) {
             return;
         }
-        System.out.println("------ air col 2 good for candidate " + res);
+        System.out.println("------ air col 2 good for candidate " + structureSeed + " " + tpCommand(sugarcaneRoot));
 //
 //        var goodWaterfall = waterfalls.stream().filter(pos -> waterfallCanSpawn(airPosSet2, pos)).findFirst();
 //        if (goodWaterfall.isEmpty()) {
 //            return;
 //        }
-        System.out.println("-------- reached world seed check for candidate " + res);
-        WorldSeed.getSisterSeeds(res.getBitsOfSeed() & Mth.MASK_48).asStream().boxed()
+        System.out.println("-------- reached world seed check for candidate " + structureSeed + " " + tpCommand(sugarcaneRoot));
+        WorldSeed.getSisterSeeds(structureSeed & Mth.MASK_48).asStream().boxed()
                 .limit(256)
                 .forEach(worldSeed -> {
                     BiomeSource obs = BiomeSource.of(Dimension.OVERWORLD, MCVersion.v1_16_1, worldSeed);
 
                     final int qRange = 3;
-                    int quartX = (res.getX() + 8) >> 2;
-                    int quartZ = (res.getZ() + 15) >> 2;
+                    int quartX = (blockX + 8) >> 2;
+                    int quartZ = (blockZ + 15) >> 2;
                     for (int dx = -qRange; dx <= qRange; dx++) {
                         for (int dz = -qRange; dz <= qRange; dz++) {
                             if (obs.getBiomeForNoiseGen(quartX + dx, 0, quartZ + dz) != Biomes.DESERT) {
@@ -193,7 +169,7 @@ public class TallSugarcaneFinder extends SeedFinder {
             System.out.printf("===== batch %d/%d\n", b+1, numBatches);
             long start = b * batchSize + offset;
             long end = (b + 1) * batchSize + offset;
-            new TallSugarcaneFinder(start, end).run(new ArrayList<>()); //.runThreaded(new ArrayList<>(), 1);
+            new TallSugarcaneFinder(start, end).runThreaded(new ArrayList<>(), 8);
         }
     }
 }
